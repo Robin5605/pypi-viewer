@@ -2,7 +2,7 @@ services:
   pypi-viewer:
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pypi-viewer.rule=Host(`pypi-inspector.robinjs.dev`)"
+      - "traefik.http.routers.pypi-viewer.rule=Host(`pypi-viewer.robinjs.dev`)"
       - "traefik.http.routers.pypi-viewer.entrypoints=websecure"
       - "traefik.http.routers.pypi-viewer.tls.certresolver=myresolver"
     build: .
