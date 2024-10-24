@@ -4,7 +4,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.pypi-viewer.rule=Host(`pypi-inspector.robinjs.dev`)"
       - "traefik.http.routers.pypi-viewer.entrypoints=websecure"
-      - "traefik.http.routers.pypi-viewer.tls-certresolver=myresolver"
+      - "traefik.http.routers.pypi-viewer.tls.certresolver=myresolver"
     build: .
     image: ghcr.io/robin5605/pypi-viewer:latest
     ports:
