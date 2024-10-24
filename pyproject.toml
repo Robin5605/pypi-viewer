@@ -1,13 +1,18 @@
 [project]
 name = "pypi-viewer"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "Browse packages and their artifacts uploaded to the Python Package Index"
 authors = [
     {name = "Robin", email = "robinjefferson123@gmail.com"},
 ]
 dependencies = [
     "fastapi[standard]>=0.115.2",
     "httpx>=0.27.2",
+    "memray>=1.14.0",
+    "pydantic-settings>=2.6.0",
+    "hypothesis>=6.115.3",
+    "pytest>=8.3.3",
+    "pre-commit>=4.0.1",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -15,4 +20,15 @@ license = {text = "MIT"}
 
 
 [tool.pdm]
-distribution = false
+distribution = true
+
+[tool.pdm.scripts]
+dev = { shell = "fastapi dev src/pypi_viewer/main.py" }
+prod = { shell = "fastapi run src/pypi_viewer/main.py" }
+precommit = { shell = "pre-commit run --all-files" }
+test = { shell = "pytest tests/" }
+
+[tool.pyright]
+include = ["src/**/*.py"]
+venvPath = "."
+venv = ".venv"
