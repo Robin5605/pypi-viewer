@@ -37,10 +37,8 @@ def download_distribution(url: str, http_client: httpx.Client) -> Distribution:
         raise ValueError(f"{url} is not recognized as a tar file or a zip file.")
 
 
-@app.get("/project/{name}/{version}/packages/{first}/{second}/{rest}/{distname}/")
+@app.get("/packages/{first}/{second}/{rest}/{distname}/")
 def list_distribution_files(
-    name: str,
-    version: str,
     first: str,
     second: str,
     rest: str,
@@ -63,12 +61,8 @@ def list_distribution_files(
     return distribution.get_files()
 
 
-@app.get(
-    "/project/{name}/{version}/packages/{first}/{second}/{rest}/{distname}/{filepath:path}"
-)
+@app.get("/packages/{first}/{second}/{rest}/{distname}/{filepath:path}")
 def get_file_content(
-    name: str,
-    version: str,
     first: str,
     second: str,
     rest: str,
