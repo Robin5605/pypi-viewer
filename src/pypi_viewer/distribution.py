@@ -3,6 +3,7 @@ from pypi_viewer.schemas import File
 from zipfile import ZipFile
 import tarfile
 
+
 class Distribution(Protocol):
     def get_files(self) -> list[File]:
         """Get all the file names and sizes in this distribution."""
@@ -16,13 +17,18 @@ class Distribution(Protocol):
         """
         ...
 
+
 class Zip(Distribution):
     def __init__(self, file: IO[bytes]) -> None:
         self.file = file
 
     def get_files(self) -> list[File]:
         zip = ZipFile(self.file)
-        return [File(name=i.filename, size=i.file_size) for i in zip.infolist() if not i.is_dir()]
+        return [
+            File(name=i.filename, size=i.file_size)
+            for i in zip.infolist()
+            if not i.is_dir()
+        ]
 
     def get_file_contents(self, path: str) -> bytes:
         zip = ZipFile(self.file)
@@ -32,6 +38,7 @@ class Zip(Distribution):
         except KeyError:
             raise FileNotFoundError(f"{path} is not found")
 
+
 class TarGz(Distribution):
     def __init__(self, file: IO[bytes]) -> None:
         self.file = file
@@ -39,7 +46,9 @@ class TarGz(Distribution):
     def get_files(self) -> list[File]:
         self.file.seek(0)
         tar = tarfile.open(fileobj=self.file)
-        return [File(name=i.name, size=i.size) for i in tar.getmembers() if not i.isdir()]
+        return [
+            File(name=i.name, size=i.size) for i in tar.getmembers() if not i.isdir()
+        ]
 
     def get_file_contents(self, path: str) -> bytes:
         self.file.seek(0)

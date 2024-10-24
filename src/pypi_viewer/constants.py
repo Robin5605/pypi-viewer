@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class EnvConfig(BaseSettings):
     """Default configuration for models that should load from .env files."""
 
@@ -10,6 +11,7 @@ class EnvConfig(BaseSettings):
         extra="ignore",
     )
 
+
 class PyPIViewerSettings(EnvConfig, env_prefix="PYPI_VIEWER_"):
     """PyPI Viewer Settings."""
 
@@ -18,5 +20,6 @@ class PyPIViewerSettings(EnvConfig, env_prefix="PYPI_VIEWER_"):
 
     # Size of chunks int bytes when streaming downloads. Trades CPU cycles for memory
     CHUNK_SIZE: int = 4096
+
 
 pypi_viewer_settings = PyPIViewerSettings.model_validate({})

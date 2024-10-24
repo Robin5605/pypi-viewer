@@ -6,8 +6,11 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
 
+
 def configure_logger():
-    log_format = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    log_format = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    )
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
@@ -15,6 +18,7 @@ def configure_logger():
     root_logger.addHandler(handler)
     uvicorn_logger = logging.getLogger("uvicorn.access")
     uvicorn_logger.disabled = True
+
 
 class LoggingMiddleware:
     def __init__(self, app: ASGIApp) -> None:
@@ -25,6 +29,7 @@ class LoggingMiddleware:
             return await self.app(scope, receive, send)
 
         request = Request(scope)
+
         async def inner_send(message: Message):
             if message["type"] == "http.response.start":
                 start_time = time.perf_counter()
@@ -36,6 +41,5 @@ class LoggingMiddleware:
                 )
             else:
                 await send(message)
-            
 
         await self.app(scope, receive, inner_send)

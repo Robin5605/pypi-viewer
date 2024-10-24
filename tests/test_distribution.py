@@ -11,6 +11,7 @@ from pypi_viewer.distribution import Zip, TarGz
 
 ALPHABET = ascii_letters + digits + "_- "
 
+
 @given(lists(text(ALPHABET), unique=True))
 def test_zipfile_get_filenames(filenames: list[str]):
     with TemporaryFile() as f:
@@ -20,10 +21,11 @@ def test_zipfile_get_filenames(filenames: list[str]):
 
         distribution = Zip(f)
         actual_files = distribution.get_files()
-        
+
         assert len(actual_files) == len(filenames)
         for file in actual_files:
             assert file.name in filenames
+
 
 @given(lists(text(ALPHABET), unique=True))
 def test_tarfile_get_filenames(filenames: list[str]):
@@ -36,7 +38,7 @@ def test_tarfile_get_filenames(filenames: list[str]):
 
     distribution = TarGz(buf)
     actual_files = distribution.get_files()
-    
+
     assert len(actual_files) == len(filenames)
     for file in actual_files:
         assert file.name in filenames
