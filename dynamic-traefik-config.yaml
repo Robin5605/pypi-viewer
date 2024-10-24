@@ -1,0 +1,8 @@
+# Dynamic configuration
+
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certificates/robinjs.dev.pem
+        keyFile: /certificates/robinjs.dev.key
