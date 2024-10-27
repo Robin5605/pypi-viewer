@@ -21,9 +21,5 @@ class PyPIViewerSettings(EnvConfig, env_prefix="PYPI_VIEWER_"):
     # Size of chunks int bytes when streaming downloads. Trades CPU cycles for memory
     CHUNK_SIZE: int = 4096
 
-    # Maximum file size that the server will serve.
-    # Since the file is loaded into memory first, the server may potentially use up to this much memory.
-    MAX_FILE_SIZE: int = 128_000_000  # 128 MB
-
 
 pypi_viewer_settings = PyPIViewerSettings.model_validate({})

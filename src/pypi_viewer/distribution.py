@@ -1,7 +1,11 @@
+from collections.abc import Generator
 from typing import Protocol, IO
 from pypi_viewer.schemas import File
 from zipfile import ZipFile
 import tarfile
+from pypi_viewer.constants import pypi_viewer_settings
+
+DEFAULT_CHUNK_SIZE: int = pypi_viewer_settings.CHUNK_SIZE
 
 
 class Distribution(Protocol):
@@ -25,6 +29,16 @@ class Distribution(Protocol):
         """
         ...
 
+    def stream_file_contents(
+        self, path: str, *, chunk_size: int = DEFAULT_CHUNK_SIZE
+    ) -> Generator[bytes, None, None]:
+        """Stream the contents of this file.
+
+        Raises:
+            - `FileNotFoundError` if the path was not found in the distribution or it was a directory
+        """
+        ...
+
 
 class Zip(Distribution):
     def __init__(self, file: IO[bytes]) -> None:
@@ -39,10 +53,16 @@ class Zip(Distribution):
         ]
 
     def get_file_contents(self, path: str) -> bytes:
+        return b"".join(self.stream_file_contents(path))
+
+    def stream_file_contents(
+        self, path: str, *, chunk_size: int = DEFAULT_CHUNK_SIZE
+    ) -> Generator[bytes, None, None]:
         zip = ZipFile(self.file)
         try:
             with zip.open(path) as f:
-                return f.read()
+                while b := f.read(chunk_size):
+                    yield b
         except KeyError:
             raise FileNotFoundError(f"{path} is not found")
 
@@ -70,6 +90,11 @@ class TarGz(Distribution):
         ]
 
     def get_file_contents(self, path: str) -> bytes:
+        return b"".join(self.stream_file_contents(path))
+
+    def stream_file_contents(
+        self, path: str, *, chunk_size: int = DEFAULT_CHUNK_SIZE
+    ) -> Generator[bytes, None, None]:
         self.file.seek(0)
         tar = tarfile.open(fileobj=self.file)
         try:
@@ -79,7 +104,8 @@ class TarGz(Distribution):
         if f is None:
             raise FileNotFoundError(f"{path} is not a file")
 
-        return f.read()
+        while b := f.read(chunk_size):
+            yield b
 
     def get_file_size(self, path: str) -> int:
         self.file.seek(0)

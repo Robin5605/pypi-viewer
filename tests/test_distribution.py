@@ -69,3 +69,30 @@ def test_tarfile_get_size(files: list[tuple[str, bytes]]):
     distribution = TarGz(buf)
     for filename, content in files:
         assert distribution.get_file_size(filename) == len(content)
+
+
+@given(text(ALPHABET, min_size=1), binary(min_size=2))
+def test_zipfile_stream_contents(name: str, content: bytes):
+    buf = BytesIO()
+    with ZipFile(buf, mode="w") as zip:
+        zip.writestr(name, content)
+
+    distribution = Zip(buf)
+    first_chunk = next(distribution.stream_file_contents(name, chunk_size=1))
+    assert len(first_chunk) < len(content)
+    assert content.startswith(first_chunk)
+
+
+@given(text(ALPHABET, min_size=1), binary(min_size=2))
+def test_tarfile_stream_contents(name: str, content: bytes):
+    buf = BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+        info = tarfile.TarInfo(name)
+        info.size = len(content)
+
+        tar.addfile(info, BytesIO(content))
+
+    distribution = TarGz(buf)
+    first_chunk = next(distribution.stream_file_contents(name, chunk_size=1))
+    assert len(first_chunk) < len(content)
+    assert content.startswith(first_chunk)

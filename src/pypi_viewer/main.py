@@ -1,7 +1,8 @@
 from functools import lru_cache
 import logging
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 import httpx
 from tempfile import TemporaryFile
 from pypi_viewer.distribution import Distribution, TarGz, Zip
@@ -82,14 +83,11 @@ def get_file_content(
         )
 
     try:
-        size = distribution.get_file_size(filepath)
-        max_size = pypi_viewer_settings.MAX_FILE_SIZE
-        if size < max_size:
-            content = distribution.get_file_contents(filepath)
-            return Response(content=content, media_type="application/octet-stream")
-        else:
-            logger.warn(f"{distname}/{filepath} is too large ({size > max_size})")
-            raise HTTPException(413, detail="File size is too large")
+        return StreamingResponse(
+            content=distribution.stream_file_contents(filepath),
+            media_type="application/octet-stream",
+            headers={"Content-Length": str(distribution.get_file_size(filepath))},
+        )
     except FileNotFoundError as exception:
         raise HTTPException(404, detail=str(exception))
 
