@@ -17,6 +17,14 @@ class Distribution(Protocol):
         """
         ...
 
+    def get_file_size(self, path: str) -> int:
+        """Get the file size of a file in this distribution.
+
+        Raises:
+            - `FileNotFoundError` if the path was not found in the distribution or it was a directory
+        """
+        ...
+
 
 class Zip(Distribution):
     def __init__(self, file: IO[bytes]) -> None:
@@ -37,6 +45,17 @@ class Zip(Distribution):
                 return f.read()
         except KeyError:
             raise FileNotFoundError(f"{path} is not found")
+
+    def get_file_size(self, path: str) -> int:
+        zip = ZipFile(self.file)
+        try:
+            info = zip.getinfo(path)
+            if info.is_dir():
+                raise KeyError
+        except KeyError:
+            raise FileNotFoundError(f"{path} is not found")
+
+        return info.file_size
 
 
 class TarGz(Distribution):
@@ -61,3 +80,15 @@ class TarGz(Distribution):
             raise FileNotFoundError(f"{path} is not a file")
 
         return f.read()
+
+    def get_file_size(self, path: str) -> int:
+        self.file.seek(0)
+        tar = tarfile.open(fileobj=self.file)
+        try:
+            f = tar.getmember(path)
+            if f.isdir():
+                raise KeyError
+        except KeyError:
+            raise FileNotFoundError(f"{path} is not found")
+
+        return f.size

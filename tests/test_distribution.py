@@ -1,6 +1,6 @@
 import tarfile
 from hypothesis import given
-from hypothesis.strategies import lists, text
+from hypothesis.strategies import binary, lists, text, tuples
 from string import ascii_letters, digits
 from tempfile import TemporaryFile
 
@@ -42,3 +42,30 @@ def test_tarfile_get_filenames(filenames: list[str]):
     assert len(actual_files) == len(filenames)
     for file in actual_files:
         assert file.name in filenames
+
+
+@given(lists(tuples(text(ALPHABET, min_size=1), binary()), unique_by=lambda x: x[0]))
+def test_zipfile_get_size(files: list[tuple[str, bytes]]):
+    buf = BytesIO()
+    with ZipFile(buf, mode="w") as zip:
+        for name, content in files:
+            zip.writestr(name, content)
+
+    distribution = Zip(buf)
+    for filename, content in files:
+        assert distribution.get_file_size(filename) == len(content)
+
+
+@given(lists(tuples(text(ALPHABET, min_size=1), binary()), unique_by=lambda x: x[0]))
+def test_tarfile_get_size(files: list[tuple[str, bytes]]):
+    buf = BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+        for name, content in files:
+            info = tarfile.TarInfo(name)
+            info.size = len(content)
+
+            tar.addfile(info, BytesIO(content))
+
+    distribution = TarGz(buf)
+    for filename, content in files:
+        assert distribution.get_file_size(filename) == len(content)
