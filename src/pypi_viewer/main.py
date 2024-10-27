@@ -84,7 +84,7 @@ def get_file_content(
     try:
         size = distribution.get_file_size(filepath)
         max_size = pypi_viewer_settings.MAX_FILE_SIZE
-        if size > max_size:
+        if size < max_size:
             content = distribution.get_file_contents(filepath)
             return Response(content=content, media_type="application/octet-stream")
         else:
